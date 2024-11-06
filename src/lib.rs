@@ -77,6 +77,7 @@ pub fn line_columns_unchecked<const N: usize>(
 /// assert_eq!(line_column("a\n", 2),  (2, 1));
 /// assert_eq!(line_column("a\nb", 2), (2, 1));
 /// ```
+#[inline]
 pub fn line_column(s: &str, index: usize) -> (u32, u32) {
     line_columns(s, [index])[0]
 }
