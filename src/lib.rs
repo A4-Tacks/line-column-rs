@@ -62,6 +62,39 @@ pub fn line_columns_unchecked<const N: usize>(
     result
 }
 
+/// Get str index of line and column
+///
+/// If the line or column out the length of the `s`, return `s.len()`
+///
+/// # Panics
+/// - line or column by zero
+///
+/// # Examples
+/// ```
+/// # use line_column::index;
+/// assert_eq!(index("", 1, 1), 0);
+/// assert_eq!(index("a", 1, 1), 0);
+/// assert_eq!(index("a", 1, 2), 1);
+/// assert_eq!(index("a\n", 1, 2), 1);
+/// assert_eq!(index("a\n", 2, 1), 2);
+/// assert_eq!(index("a\nx", 2, 2), 3);
+/// ```
+pub fn index(s: &str, line: u32, column: u32) -> usize {
+    assert_ne!(line, 0);
+    assert_ne!(column, 0);
+    let mut i = 0;
+    for _ in 1..line {
+        let Some(lf) = s[i..].find('\n') else { break };
+        i += lf+1;
+    }
+    let s = &s[i..];
+    let lf = s.find('\n').map_or(s.len(), |l| l+1);
+    let s = &s[..lf];
+    i + s.char_indices()
+        .nth(column as usize-1)
+        .map_or(s.len(), |x| x.0)
+}
+
 /// Get tuple of line and column
 ///
 /// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
