@@ -82,6 +82,7 @@ pub fn line_columns_unchecked<const N: usize>(
 pub fn index(s: &str, line: u32, column: u32) -> usize {
     assert_ne!(line, 0);
     assert_ne!(column, 0);
+
     let mut i = 0;
     for _ in 1..line {
         let Some(lf) = s[i..].find('\n') else { break };
@@ -93,6 +94,45 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
     i + s.char_indices()
         .nth(column as usize-1)
         .map_or(s.len(), |x| x.0)
+}
+
+/// Get str char index of line and column
+///
+/// If the line or column out the length of the `s`, return `s.chars().count()`
+///
+/// # Panics
+/// - line or column by zero
+///
+/// # Examples
+/// ```
+/// # use line_column::char_index;
+/// assert_eq!(char_index("", 1, 1), 0);
+/// assert_eq!(char_index("a", 1, 1), 0);
+/// assert_eq!(char_index("你好\n世界", 1, 2), 1);
+/// assert_eq!(char_index("你好\n世界", 1, 3), 2);
+/// assert_eq!(char_index("你好\n世界", 2, 1), 3);
+/// ```
+pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
+    assert_ne!(line, 0);
+    assert_ne!(column, 0);
+
+    line -= 1;
+    column -= 1;
+
+    let mut i = 0;
+    let mut eol = false;
+
+    for ch in s.chars() {
+        if line == 0 {
+            if column == 0 || eol { break }
+            column -= 1;
+            eol = ch == '\n';
+        } else {
+            if ch == '\n' { line -= 1 }
+        }
+        i += 1;
+    }
+    i
 }
 
 /// Get tuple of line and column
