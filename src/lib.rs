@@ -6,6 +6,12 @@ mod tests;
 const UNINIT_LINE_COL: (u32, u32) = (0, 0);
 
 /// Get multiple sets of lines and columns may be faster
+///
+/// # Panics
+///
+/// - index out of `0..s.len()`
+/// - index not on char boundary
+#[must_use]
 pub fn line_columns<const N: usize>(
     s: &str,
     indexs: [usize; N],
@@ -30,6 +36,7 @@ pub fn line_columns<const N: usize>(
 ///
 /// If the index does not fall on the character boundary,
 /// the unspecified results
+#[must_use]
 pub fn line_columns_unchecked<const N: usize>(
     s: &str,
     indexs: [usize; N],
@@ -78,7 +85,11 @@ pub fn line_columns_unchecked<const N: usize>(
 /// assert_eq!(index("a\n", 1, 2), 1);
 /// assert_eq!(index("a\n", 2, 1), 2);
 /// assert_eq!(index("a\nx", 2, 2), 3);
+/// assert_eq!(index("你好\n世界", 1, 2), 3); // byte index
+/// assert_eq!(index("你好\n世界", 1, 3), 6);
+/// assert_eq!(index("你好\n世界", 2, 1), 7);
 /// ```
+#[must_use]
 pub fn index(s: &str, line: u32, column: u32) -> usize {
     assert_ne!(line, 0);
     assert_ne!(column, 0);
@@ -112,6 +123,7 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
 /// assert_eq!(char_index("你好\n世界", 1, 3), 2);
 /// assert_eq!(char_index("你好\n世界", 2, 1), 3);
 /// ```
+#[must_use]
 pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     assert_ne!(line, 0);
     assert_ne!(column, 0);
@@ -127,8 +139,8 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
             if column == 0 || eol { break }
             column -= 1;
             eol = ch == '\n';
-        } else {
-            if ch == '\n' { line -= 1 }
+        } else if ch == '\n' {
+            line -= 1;
         }
         i += 1;
     }
@@ -151,6 +163,7 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 /// assert_eq!(line_column("a\nb", 2), (2, 1));
 /// ```
 #[inline]
+#[must_use]
 pub fn line_column(s: &str, index: usize) -> (u32, u32) {
     line_columns(s, [index])[0]
 }
