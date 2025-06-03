@@ -1,17 +1,21 @@
 #![no_std]
 #![doc = include_str!("../README.md")]
+
 #[cfg(test)]
 mod tests;
 
 const UNINIT_LINE_COL: (u32, u32) = (0, 0);
 
-/// Get multiple sets of lines and columns may be faster
+/// Get multiple pairs of lines and columns may be faster
+///
+/// Like [`line_column`]
 ///
 /// # Panics
 ///
 /// - index out of `0..s.len()`
 /// - index not on char boundary
 #[must_use]
+#[track_caller]
 pub fn line_columns<const N: usize>(
     s: &str,
     indexs: [usize; N],
@@ -32,7 +36,56 @@ pub fn line_columns<const N: usize>(
     result
 }
 
+/// Get multiple pairs of lines and columns may be faster
+///
+/// Like [`char_line_column`]
+///
+/// # Panics
+/// - `indexs` any index greater than `s.chars().count()`
+#[must_use]
+#[track_caller]
+pub fn char_line_columns<const N: usize>(
+    s: &str,
+    indexs: [usize; N],
+) -> [(u32, u32); N] {
+    let mut len = 0;
+    let mut result = [UNINIT_LINE_COL; N];
+
+    let last_loc = s.chars()
+        .enumerate()
+        .inspect(|&(i, _)| len = i+1)
+        .fold((1, 1), |(line, column), (cur, ch)|
+    {
+        for (i, &index) in indexs.iter().enumerate() {
+            if index == cur {
+                result[i] = (line, column);
+            }
+        }
+
+        if ch == '\n' {
+            (line+1, 1)
+        } else {
+            (line, column+1)
+        }
+    });
+
+    for index in indexs {
+        assert!(index <= len,
+                "char index {index} out of str length {len} of `{s:?}`");
+    }
+
+    for (i, &index) in indexs.iter().enumerate() {
+        if index >= len {
+            result[i] = last_loc;
+        }
+    }
+
+    result
+}
+
 /// Get multiple of lines and columns may be faster
+///
+/// Use byte index
 ///
 /// If the index does not fall on the character boundary,
 /// the unspecified results
@@ -69,7 +122,7 @@ pub fn line_columns_unchecked<const N: usize>(
     result
 }
 
-/// Get str index of line and column
+/// Get str byte index of line and column
 ///
 /// If the line or column out the length of the `s`, return `s.len()`
 ///
@@ -90,6 +143,7 @@ pub fn line_columns_unchecked<const N: usize>(
 /// assert_eq!(index("你好\n世界", 2, 1), 7);
 /// ```
 #[must_use]
+#[track_caller]
 pub fn index(s: &str, line: u32, column: u32) -> usize {
     assert_ne!(line, 0);
     assert_ne!(column, 0);
@@ -124,6 +178,7 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
 /// assert_eq!(char_index("你好\n世界", 2, 1), 3);
 /// ```
 #[must_use]
+#[track_caller]
 pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     assert_ne!(line, 0);
     assert_ne!(column, 0);
@@ -147,7 +202,7 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     i
 }
 
-/// Get tuple of line and column
+/// Get tuple of line and column, use byte index
 ///
 /// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
 ///
@@ -164,6 +219,33 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 /// ```
 #[inline]
 #[must_use]
+#[track_caller]
 pub fn line_column(s: &str, index: usize) -> (u32, u32) {
     line_columns(s, [index])[0]
+}
+
+/// Get tuple of line and column, use char index
+///
+/// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
+///
+/// # Panics
+/// - `index > s.chars().count()`
+///
+/// # Examples
+/// ```
+/// # use line_column::char_line_column;
+/// assert_eq!(char_line_column("", 0),         (1, 1));
+/// assert_eq!(char_line_column("a", 0),        (1, 1));
+/// assert_eq!(char_line_column("a", 1),        (1, 2));
+/// assert_eq!(char_line_column("ab", 1),       (1, 2));
+/// assert_eq!(char_line_column("😀\n", 1),     (1, 2));
+/// assert_eq!(char_line_column("😀\n", 2),     (2, 1));
+/// assert_eq!(char_line_column("😀\n❓", 2),   (2, 1));
+/// assert_eq!(char_line_column("😀\n❓", 2),   (2, 1));
+/// ```
+#[inline]
+#[must_use]
+#[track_caller]
+pub fn char_line_column(s: &str, index: usize) -> (u32, u32) {
+    char_line_columns(s, [index])[0]
 }

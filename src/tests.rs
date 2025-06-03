@@ -17,10 +17,39 @@ fn test_simple() {
         ("你好", 3, 1, 2),
         ("你好", 6, 1, 3),
         ("你好\n", 6, 1, 3),
+        ("你好\n", 7, 2, 1),
     ];
 
     for (s, index, line, column) in tests {
         let result = line_column(s, index);
+        assert_eq!(result, (line, column), "{s:?}[{index}]");
+    }
+}
+
+#[test]
+fn test_simple_char_index() {
+    let tests = [
+        ("", 0, 1, 1),
+        ("a", 0, 1, 1),
+        ("\n", 0, 1, 1),
+        ("a", 1, 1, 2),
+        ("aa", 1, 1, 2),
+        ("a\n", 1, 1, 2),
+        ("\n", 1, 2, 1),
+        ("\na", 1, 2, 1),
+        ("\n\n", 1, 2, 1),
+        ("\n\n", 2, 3, 1),
+        ("你好", 0, 1, 1),
+        ("你好", 1, 1, 2),
+        ("你好", 2, 1, 3),
+        ("你好\n", 2, 1, 3),
+        ("你好\n", 3, 2, 1),
+        ("你\n好", 2, 2, 1),
+        ("你\n好", 3, 2, 2),
+    ];
+
+    for (s, index, line, column) in tests {
+        let result = char_line_column(s, index);
         assert_eq!(result, (line, column), "{s:?}[{index}]");
     }
 }
