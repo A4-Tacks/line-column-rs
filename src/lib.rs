@@ -132,15 +132,15 @@ pub fn line_columns_unchecked<const N: usize>(
 /// # Examples
 /// ```
 /// # use line_column::index;
-/// assert_eq!(index("", 1, 1), 0);
-/// assert_eq!(index("a", 1, 1), 0);
-/// assert_eq!(index("a", 1, 2), 1);
-/// assert_eq!(index("a\n", 1, 2), 1);
-/// assert_eq!(index("a\n", 2, 1), 2);
-/// assert_eq!(index("a\nx", 2, 2), 3);
-/// assert_eq!(index("你好\n世界", 1, 2), 3); // byte index
-/// assert_eq!(index("你好\n世界", 1, 3), 6);
-/// assert_eq!(index("你好\n世界", 2, 1), 7);
+/// assert_eq!(index("", 1, 1),             0);
+/// assert_eq!(index("a", 1, 1),            0);
+/// assert_eq!(index("a", 1, 2),            1);
+/// assert_eq!(index("a\n", 1, 2),          1);
+/// assert_eq!(index("a\n", 2, 1),          2);
+/// assert_eq!(index("a\nx", 2, 2),         3);
+/// assert_eq!(index("你好\n世界", 1, 2),   3); // byte index
+/// assert_eq!(index("你好\n世界", 1, 3),   6);
+/// assert_eq!(index("你好\n世界", 2, 1),   7);
 /// ```
 #[must_use]
 #[track_caller]
@@ -171,11 +171,11 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
 /// # Examples
 /// ```
 /// # use line_column::char_index;
-/// assert_eq!(char_index("", 1, 1), 0);
-/// assert_eq!(char_index("a", 1, 1), 0);
-/// assert_eq!(char_index("你好\n世界", 1, 2), 1);
-/// assert_eq!(char_index("你好\n世界", 1, 3), 2);
-/// assert_eq!(char_index("你好\n世界", 2, 1), 3);
+/// assert_eq!(char_index("", 1, 1),            0);
+/// assert_eq!(char_index("a", 1, 1),           0);
+/// assert_eq!(char_index("你好\n世界", 1, 2),  1);
+/// assert_eq!(char_index("你好\n世界", 1, 3),  2);
+/// assert_eq!(char_index("你好\n世界", 2, 1),  3);
 /// ```
 #[must_use]
 #[track_caller]

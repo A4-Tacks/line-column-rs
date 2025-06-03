@@ -42,15 +42,15 @@ assert_eq!(char_line_column("😀\n❓", 2),   (2, 1));
 ```rust
 use line_column::index;
 
-assert_eq!(index("", 1, 1), 0);
-assert_eq!(index("a", 1, 1), 0);
-assert_eq!(index("a", 1, 2), 1);
-assert_eq!(index("a\n", 1, 2), 1);
-assert_eq!(index("a\n", 2, 1), 2);
-assert_eq!(index("a\nx", 2, 2), 3);
-assert_eq!(index("你好\n世界", 1, 2), 3); // byte index
-assert_eq!(index("你好\n世界", 1, 3), 6);
-assert_eq!(index("你好\n世界", 2, 1), 7);
+assert_eq!(index("", 1, 1),             0);
+assert_eq!(index("a", 1, 1),            0);
+assert_eq!(index("a", 1, 2),            1);
+assert_eq!(index("a\n", 1, 2),          1);
+assert_eq!(index("a\n", 2, 1),          2);
+assert_eq!(index("a\nx", 2, 2),         3);
+assert_eq!(index("你好\n世界", 1, 2),   3); // byte index
+assert_eq!(index("你好\n世界", 1, 3),   6);
+assert_eq!(index("你好\n世界", 2, 1),   7);
 ```
 
 **Line number to character index**:
@@ -63,4 +63,19 @@ assert_eq!(char_index("a", 1, 1),           0);
 assert_eq!(char_index("你好\n世界", 1, 2),  1);
 assert_eq!(char_index("你好\n世界", 1, 3),  2);
 assert_eq!(char_index("你好\n世界", 2, 1),  3);
+```
+
+**The end of string is considered a character**:
+
+```rust
+use line_column::*;
+
+assert_eq!(index("", 1, 1),             0);
+assert_eq!(index("a", 1, 2),            1);
+assert_eq!(char_index("", 1, 1),        0);
+assert_eq!(char_index("a", 1, 2),       1);
+assert_eq!(line_column("", 0),          (1, 1));
+assert_eq!(line_column("a", 1),         (1, 2));
+assert_eq!(char_line_column("", 0),     (1, 1));
+assert_eq!(char_line_column("a", 1),    (1, 2));
 ```
