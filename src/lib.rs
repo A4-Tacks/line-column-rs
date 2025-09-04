@@ -153,12 +153,10 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
         let Some(lf) = s[i..].find('\n') else { break };
         i += lf+1;
     }
-    let s = &s[i..];
-    let lf = s.find('\n').map_or(s.len(), |l| l+1);
-    let s = &s[..lf];
-    i + s.char_indices()
-        .nth(column as usize-1)
-        .map_or(s.len(), |x| x.0)
+    s[i..].chars()
+        .take_while(|ch| *ch != '\n')
+        .take(column as usize - 1)
+        .fold(i, |acc, ch| acc + ch.len_utf8())
 }
 
 /// Get str char index of line and column
@@ -187,13 +185,11 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     column -= 1;
 
     let mut i = 0;
-    let mut eol = false;
 
     for ch in s.chars() {
         if line == 0 {
-            if column == 0 || eol { break }
+            if column == 0 || ch == '\n' { break }
             column -= 1;
-            eol = ch == '\n';
         } else if ch == '\n' {
             line -= 1;
         }
