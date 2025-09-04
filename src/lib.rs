@@ -124,10 +124,10 @@ pub fn line_columns_unchecked<const N: usize>(
 
 /// Get str byte index of line and column
 ///
-/// If the line or column out the length of the `s`, return `s.len()`
+/// If the line out the length of the `s`, return `s.len()`
 ///
 /// # Panics
-/// - line or column by zero
+/// - line by zero
 ///
 /// # Examples
 /// ```
@@ -146,12 +146,14 @@ pub fn line_columns_unchecked<const N: usize>(
 #[track_caller]
 pub fn index(s: &str, line: u32, column: u32) -> usize {
     assert_ne!(line, 0);
-    assert_ne!(column, 0);
 
     let mut i = 0;
     for _ in 1..line {
-        let Some(lf) = s[i..].find('\n') else { break };
+        let Some(lf) = s[i..].find('\n') else { return s.len() };
         i += lf+1;
+    }
+    if column == 0 {
+        return i.saturating_sub(1)
     }
     s[i..].chars()
         .take_while(|ch| *ch != '\n')
@@ -161,10 +163,10 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
 
 /// Get str char index of line and column
 ///
-/// If the line or column out the length of the `s`, return `s.chars().count()`
+/// If the line out the length of the `s`, return `s.chars().count()`
 ///
 /// # Panics
-/// - line or column by zero
+/// - line by zero
 ///
 /// # Examples
 /// ```
@@ -179,14 +181,18 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
 #[track_caller]
 pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     assert_ne!(line, 0);
-    assert_ne!(column, 0);
 
+    let mut back_style = column == 0;
     line -= 1;
-    column -= 1;
+    column = column.saturating_sub(1);
 
-    let mut i = 0;
-
-    for ch in s.chars() {
+    let mut i = 0usize;
+    let mut chars = s.chars();
+    loop {
+        let Some(ch) = chars.next() else {
+            back_style &= line == 0;
+            break
+        };
         if line == 0 {
             if column == 0 || ch == '\n' { break }
             column -= 1;
@@ -195,7 +201,7 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
         }
         i += 1;
     }
-    i
+    i.saturating_sub(back_style.into())
 }
 
 /// Get tuple of line and column, use byte index

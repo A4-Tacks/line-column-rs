@@ -4,6 +4,12 @@ Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
 
 Newline char line number is current line
 
+For `index` and `char_index`:
+
+- When index exceeds the string length, return string length
+- When `column` exceeds the newline char, return the index of the newline char
+- When `column` by zero, return previous char index
+
 # Examples
 
 **Byte index to line number**:

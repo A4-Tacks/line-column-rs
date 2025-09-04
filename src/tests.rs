@@ -184,6 +184,40 @@ fn char_index_test() {
 }
 
 #[test]
+fn index_back_style_test_pair() {
+    let tests = [
+        ("", 1, 0, 0),
+        ("a", 1, 0, 0),
+        ("\n", 1, 0, 0),
+        ("", 1, 1, 0),
+        ("a", 1, 1, 0),
+        ("\n", 1, 1, 0),
+        ("\n", 2, 0, 0),
+        ("\n", 2, 1, 1),
+        ("\n\n", 1, 0, 0),
+        ("\n\n", 1, 1, 0),
+        ("\n\n", 2, 0, 0),
+        ("\n\n", 2, 1, 1),
+        ("\na", 2, 0, 0),
+        ("\na", 2, 1, 1),
+        ("x\na", 2, 0, 1),
+        ("x\n\na", 2, 0, 1),
+        ("x\n\na", 3, 0, 2),
+        ("x\nx\na", 3, 0, 3),
+        ("x\nxa\na", 3, 0, 4),
+        ("x\nxa\n", 3, 0, 4),
+        ("x\nxa", 3, 0, 4),
+    ];
+
+    for d @ (src, line, column, expected)
+        in tests
+    {
+        assert_eq!(index(src, line, column), expected, "(byte){d:?}");
+        assert_eq!(char_index(src, line, column), expected, "(char){d:?}");
+    }
+}
+
+#[test]
 fn index_max_bound_test_pair() {
     let tests = [
         ("", 1, 1, 0),
