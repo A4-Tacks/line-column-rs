@@ -269,3 +269,37 @@ fn index_max_bound_test_pair() {
         assert_eq!(char_index(src, line, column), expected, "(char){d:?}");
     }
 }
+
+#[test]
+fn recover_test_pair() {
+    let tests = [
+        "",
+        "a",
+        "\n",
+        "a\n",
+        "\na",
+        "\n\n",
+        "a\n\n",
+        "\na\n",
+        "\n\na",
+        "\na\na",
+        "a\n\na",
+        "a\na\na",
+        "ab\n",
+        "\nab",
+        "a\nb",
+        "a\nb\n",
+        "a\nb\n\n",
+        "a\nb\n\nc",
+        "a\nb\nd\nc",
+    ];
+
+    for src in tests {
+        for i in 0..=src.len() {
+            let (line, column) = line_column(src, i);
+            assert_eq!(char_line_column(src, i), (line, column));
+            assert_eq!(index(src, line, column), i);
+            assert_eq!(char_index(src, line, column), i);
+        }
+    }
+}
