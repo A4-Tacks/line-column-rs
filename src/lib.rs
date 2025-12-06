@@ -242,8 +242,9 @@ pub fn line_column(s: &str, index: usize) -> (u32, u32) {
 /// assert_eq!(char_line_column("ab", 1),       (1, 2));
 /// assert_eq!(char_line_column("😀\n", 1),     (1, 2));
 /// assert_eq!(char_line_column("😀\n", 2),     (2, 1));
-/// assert_eq!(char_line_column("😀\n❓", 2),   (2, 1));
-/// assert_eq!(char_line_column("😀\n❓", 2),   (2, 1));
+/// assert_eq!(char_line_column("😀\n❓❓", 2), (2, 1));
+/// assert_eq!(char_line_column("😀\n❓❓", 3), (2, 2));
+/// assert_eq!(char_line_column("😀\n❓❓", 4), (2, 3));
 /// ```
 #[inline]
 #[must_use]
