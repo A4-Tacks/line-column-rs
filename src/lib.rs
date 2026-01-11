@@ -1,6 +1,12 @@
 #![no_std]
 #![doc = include_str!("../README.md")]
 
+#[cfg(feature = "span")]
+extern crate alloc as std;
+
+#[cfg(feature = "span")]
+pub mod span;
+
 #[cfg(test)]
 mod tests;
 
