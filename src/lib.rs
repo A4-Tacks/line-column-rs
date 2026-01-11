@@ -1,10 +1,12 @@
 #![no_std]
 #![doc = include_str!("../README.md")]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "span")]
 extern crate alloc as std;
 
 #[cfg(feature = "span")]
+#[cfg_attr(docsrs, doc(cfg(feature = "span")))]
 pub mod span;
 
 #[cfg(test)]
