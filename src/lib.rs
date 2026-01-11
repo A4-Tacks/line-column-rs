@@ -188,6 +188,8 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 
     let mut i = 0usize;
     let mut chars = s.chars();
+
+    #[allow(clippy::while_let_loop)]
     loop {
         let Some(ch) = chars.next() else {
             back_style &= line == 0;
