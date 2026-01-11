@@ -10,6 +10,10 @@ For `index` and `char_index`:
 - When `column` exceeds the newline char, return the index of the newline char
 - When `column` by zero, return previous char index
 
+**NOTE**:
+This crate is lightweight and simple calculations.
+For high-performance and frequent calculations, please use line-index crate.
+
 # Examples
 
 **Byte index to line number**:
