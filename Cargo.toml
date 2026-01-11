@@ -1,11 +1,11 @@
 [package]
 name = "line-column"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 
 description = "Simple calculate lines and columns of str index"
 keywords = ["no_std", "line", "column", "lines", "col"]
-categories = ["no-std", "no-std::no-alloc"]
+categories = ["no-std"]
 
 license = "MIT"
 readme = "README.md"
