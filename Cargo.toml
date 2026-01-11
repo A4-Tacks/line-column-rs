@@ -1,6 +1,6 @@
 [package]
 name = "line-column"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 
 description = "Simple calculate lines and columns of str index"
@@ -12,6 +12,10 @@ readme = "README.md"
 
 authors = ["A4-Tacks <wdsjxhno1001@163.com>"]
 repository = "https://github.com/A4-Tacks/line-column-rs"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 span = ["text-size"]
