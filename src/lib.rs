@@ -210,6 +210,11 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 ///
 /// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
 ///
+/// # Panics
+///
+/// - index out of `0..s.len()`
+/// - index not on char boundary
+///
 /// # Examples
 /// ```
 /// # use line_column::line_column;
