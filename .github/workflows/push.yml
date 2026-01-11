@@ -14,9 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run docs
-        run: cargo doc
-      - name: Run tests
-        run: cargo test --no-fail-fast
-      - name: Run clippy
-        run: cargo clippy -- -D warnings
+      - run: cargo doc
+      - run: cargo test --no-fail-fast
+      - run: cargo test --no-fail-fast --no-default-features
+      - run: cargo test --no-fail-fast --all-features
+      - run: cargo clippy -- -D warnings
+      - run: rm -v Cargo.lock
+      - run: cargo test --no-fail-fast
+      - run: cargo test --no-fail-fast --no-default-features
+      - run: cargo test --no-fail-fast --all-features
+      - run: cargo clippy -- -D warnings
