@@ -148,7 +148,7 @@ impl Span {
     ///
     /// # Panics
     ///
-    /// - Panics if `range+at` out of source.
+    /// - Panics if `len+start` out of source.
     ///
     /// # Examples
     ///
@@ -364,14 +364,27 @@ impl Span {
 }
 
 impl Span {
+    /// Use [`line_column`](crate::line_column) calculate line and column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use line_column::span::*;
+    ///
+    /// let span = Span::new("ab\ncdef", TextRange::empty(TextSize::of("ab\ncd")));
+    /// assert_eq!(span.before().text(), "ab\ncd");
+    /// assert_eq!(span.line_column(), (2, 3));
+    /// ```
     pub fn line_column(&self) -> (u32, u32) {
         crate::line_column(self.source(), self.index().into())
     }
 
+    /// Get line from [`Span::line_column`]
     pub fn line(&self) -> u32 {
         self.line_column().0
     }
 
+    /// Get column from [`Span::line_column`]
     pub fn column(&self) -> u32 {
         self.line_column().1
     }
