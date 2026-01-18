@@ -18,6 +18,8 @@ pub mod wrapper;
 ///
 /// If `len() == 0`, it is used to indicate offset
 ///
+/// **NOTE**: Default [`Span`] not implement [`Sync`] and [`Send`], about `sync` feature
+///
 /// # Examples
 ///
 /// ```
