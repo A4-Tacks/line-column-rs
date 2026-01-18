@@ -1,6 +1,6 @@
 [package]
 name = "line-column"
-version = "0.2.4"
+version = "0.3.0"
 edition = "2021"
 
 description = "Simple calculate lines and columns of str index"
