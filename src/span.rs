@@ -1,7 +1,12 @@
 //! Out of the box [`Span`] for storing source code and text range.
 
 use core::{fmt, ops};
-use std::{string::String, sync::Arc};
+use std::string::String;
+
+#[cfg(feature = "sync")]
+use std::sync::Arc;
+#[cfg(not(feature = "sync"))]
+use std::rc::Rc as Arc;
 
 pub use text_size::{TextRange, TextSize};
 
@@ -577,6 +582,12 @@ mod tests {
         let spans = Vec::from_iter(spans);
         let texts = spans.iter().map(|it| it.text()).collect::<Vec<_>>();
         assert_eq!(texts, expect);
+    }
+
+    #[cfg(feature = "sync")]
+    fn _test_sync(span: Span) {
+        fn check_sync(_: impl Sync) {}
+        check_sync(span);
     }
 
     #[test]

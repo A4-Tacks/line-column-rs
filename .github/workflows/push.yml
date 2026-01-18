@@ -12,16 +12,21 @@ env:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - features: --all-features
+          - features: --no-default-features
+          - features: --features=''
+          - features: --features=span
+          - features: --features=sync
+          - features: --features=span,sync
     steps:
       - uses: actions/checkout@v4
-      - run: cargo doc
-      - run: cargo doc --all-features
-      - run: cargo test --no-fail-fast
-      - run: cargo test --no-fail-fast --no-default-features
-      - run: cargo test --no-fail-fast --all-features
-      - run: cargo clippy -- -D warnings
+      - run: cargo doc    ${{ matrix.features }}
+      - run: cargo test   ${{ matrix.features }} --no-fail-fast
+      - run: cargo clippy ${{ matrix.features }} -- -D warnings
       - run: rm -v Cargo.lock
-      - run: cargo test --no-fail-fast
-      - run: cargo test --no-fail-fast --no-default-features
-      - run: cargo test --no-fail-fast --all-features
-      - run: cargo clippy -- -D warnings
+      - run: cargo doc    ${{ matrix.features }}
+      - run: cargo test   ${{ matrix.features }} --no-fail-fast
+      - run: cargo clippy ${{ matrix.features }} -- -D warnings

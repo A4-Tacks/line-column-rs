@@ -19,6 +19,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 span = ["text-size"]
+sync = []
 
 [dependencies]
 text-size = { version = "1.1.1", optional = true }
