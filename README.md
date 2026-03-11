@@ -89,3 +89,8 @@ assert_eq!(line_column("a", 1),         (1, 2));
 assert_eq!(char_line_column("", 0),     (1, 1));
 assert_eq!(char_line_column("a", 1),    (1, 2));
 ```
+
+# Features
+
+- `span`: Out of the box `Span` for storing source code and text range.
+- `sync`: `Span` uses sync structs
