@@ -206,11 +206,38 @@ impl Span {
     #[inline]
     #[track_caller]
     pub fn split_at(&self, index: TextSize) -> (Self, Self) {
+        self.split_at_range(TextRange::empty(index))
+    }
+
+    /// New splitted pair of spans from this span, using **source** `range`.
+    ///
+    /// # Panics
+    ///
+    /// - Panics if `range.end()` out of source.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use line_column::span::*;
+    ///
+    /// let source = "abcdef";
+    /// let full = Span::new_full(source);
+    /// let sub = full.create(TextRange::at(TextSize::of("ab"), TextSize::of("cd")));
+    /// assert_eq!(full.text(), "abcdef");
+    /// assert_eq!(sub.text(), "cd");
+    ///
+    /// let (a, b) = full.split_at_range(sub.range());
+    /// assert_eq!(a.text(), "ab");
+    /// assert_eq!(b.text(), "ef");
+    /// ```
+    #[inline]
+    #[track_caller]
+    pub fn split_at_range(&self, range: TextRange) -> (Self, Self) {
         let start = self.range.start();
         let end = self.range.end();
         (
-            self.create(TextRange::new(start, index)),
-            self.create(TextRange::new(index, end)),
+            self.create(TextRange::new(start, range.start())),
+            self.create(TextRange::new(range.end(), end)),
         )
     }
 
