@@ -98,7 +98,7 @@ impl Span {
         Self::checked_new(source.into(), range)
     }
 
-    /// New a span source range from exist span.
+    /// New a span **source** range from exist span.
     ///
     /// # Panics
     ///
@@ -124,7 +124,7 @@ impl Span {
         Self::checked_new(self.source.clone(), range)
     }
 
-    /// New a span relative range from exist span.
+    /// New a span **relative** range from exist span.
     ///
     /// # Panics
     ///
@@ -151,11 +151,11 @@ impl Span {
         self.create(range+start)
     }
 
-    /// New splited span pair relative index from exist span.
+    /// New splitted pair of spans from this span, using **relative** index (`len`).
     ///
     /// # Panics
     ///
-    /// - Panics if `len+start` out of source.
+    /// - Panics if `len+start()` out of source.
     ///
     /// # Examples
     ///
@@ -180,7 +180,7 @@ impl Span {
         self.split_at(self.range.start()+len)
     }
 
-    /// New splited span pair index from exist span.
+    /// New splitted pair of spans from this span, using **source** `index`.
     ///
     /// # Panics
     ///
