@@ -441,6 +441,21 @@ impl Span {
         crate::line_column(self.source(), self.index().into())
     }
 
+    /// Use [`line_column_ucs2`](crate::line_column_ucs2) calculate line and ucs2 column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use line_column::span::*;
+    ///
+    /// let span = Span::new("ab\ncdef", TextRange::empty(TextSize::of("ab\ncd")));
+    /// assert_eq!(span.before().text(), "ab\ncd");
+    /// assert_eq!(span.line_column_ucs2(), (2, 3));
+    /// ```
+    pub fn line_column_ucs2(&self) -> (u32, u32) {
+        crate::line_column_ucs2(self.source(), self.index().into())
+    }
+
     /// Get line from [`Span::line_column`]
     pub fn line(&self) -> u32 {
         self.line_column().0
@@ -449,6 +464,11 @@ impl Span {
     /// Get column from [`Span::line_column`]
     pub fn column(&self) -> u32 {
         self.line_column().1
+    }
+
+    /// Get ucs2 column from [`Span::line_column_ucs2`]
+    pub fn column_ucs2(&self) -> u32 {
+        self.line_column_ucs2().1
     }
 
     /// Returns the current line of this [`Span`].
