@@ -44,6 +44,36 @@ pub fn line_columns<const N: usize>(
     result
 }
 
+/// Get multiple pairs of lines and ucs2 columns may be faster
+///
+/// Like [`line_column_ucs2`]
+///
+/// # Panics
+///
+/// - index out of `0..s.len()`
+/// - index not on char boundary
+#[must_use]
+#[track_caller]
+pub fn line_columns_ucs2<const N: usize>(
+    s: &str,
+    indexs: [usize; N],
+) -> [(u32, u32); N] {
+    let len = s.len();
+
+    for index in indexs {
+        assert!(index <= len,
+                "index {index} out of str length {len} of `{s:?}`");
+        assert!(s.is_char_boundary(index),
+                "byte index {index} is not a char boundary of `{s:?}`");
+    }
+
+    let result = line_columns_ucs2_unchecked(s, indexs);
+
+    debug_assert!(! result.contains(&UNINIT_LINE_COL),
+                  "impl error, report bug issue");
+    result
+}
+
 /// Get multiple pairs of lines and columns may be faster
 ///
 /// Like [`char_line_column`]
@@ -130,6 +160,46 @@ pub fn line_columns_unchecked<const N: usize>(
     result
 }
 
+/// Get multiple of lines and ucs2 columns may be faster
+///
+/// Use byte index
+///
+/// If the index does not fall on the character boundary,
+/// the unspecified results
+#[must_use]
+pub fn line_columns_ucs2_unchecked<const N: usize>(
+    s: &str,
+    indexs: [usize; N],
+) -> [(u32, u32); N] {
+    let len = s.len();
+    let mut result = [UNINIT_LINE_COL; N];
+
+    let last_loc = s.char_indices()
+        .fold((1, 1), |(line, column), (cur, ch)|
+    {
+        for (i, &index) in indexs.iter().enumerate() {
+            if index == cur {
+                result[i] = (line, column);
+            }
+        }
+
+        if ch == '\n' {
+            (line+1, 1)
+        } else {
+            #[allow(clippy::cast_possible_truncation)]
+            (line, column+ch.encode_utf16(&mut [0; 2]).len() as u32)
+        }
+    });
+
+    for (i, &index) in indexs.iter().enumerate() {
+        if index == len {
+            result[i] = last_loc;
+        }
+    }
+
+    result
+}
+
 /// Get str byte index of line and column
 ///
 /// If the line out the length of the `s`, return `s.len()`
@@ -166,6 +236,53 @@ pub fn index(s: &str, line: u32, column: u32) -> usize {
     s[i..].chars()
         .take_while(|ch| *ch != '\n')
         .take(column as usize - 1)
+        .fold(i, |acc, ch| acc + ch.len_utf8())
+}
+
+/// Get str byte index of line and ucs2 column
+///
+/// If the line out the length of the `s`, return `s.len()`
+///
+/// # Panics
+/// - line by zero
+///
+/// # Examples
+/// ```
+/// # use line_column::index_ucs2;
+/// assert_eq!(index_ucs2("", 1, 1),             0);
+/// assert_eq!(index_ucs2("a", 1, 1),            0);
+/// assert_eq!(index_ucs2("a", 1, 2),            1);
+/// assert_eq!(index_ucs2("a\n", 1, 2),          1);
+/// assert_eq!(index_ucs2("a\n", 2, 1),          2);
+/// assert_eq!(index_ucs2("a\nx", 2, 2),         3);
+/// assert_eq!(index_ucs2("你好\n世界", 1, 2),   3); // byte index
+/// assert_eq!(index_ucs2("你好\n世界", 1, 3),   6);
+/// assert_eq!(index_ucs2("你好\n世界", 2, 1),   7);
+/// assert_eq!(index_ucs2("𣘗好\n世界", 1, 1),   0);
+/// assert_eq!(index_ucs2("𣘗好\n世界", 1, 3),   4); // ucs2 column
+/// assert_eq!(&"𣘗好\n世界"[4..],               "好\n世界");
+/// ```
+#[must_use]
+#[track_caller]
+pub fn index_ucs2(s: &str, line: u32, column: u32) -> usize {
+    assert_ne!(line, 0);
+
+    let mut i = 0;
+    for _ in 1..line {
+        let Some(lf) = s[i..].find('\n') else { return s.len() };
+        i += lf+1;
+    }
+    if column == 0 {
+        return i.saturating_sub(1)
+    }
+    let mut column = column as usize - 1;
+    s[i..].chars()
+        .take_while(|ch| *ch != '\n')
+        .take_while(|ch| {
+            let missing = column != 0;
+            column = column.saturating_sub(ch.len_utf16());
+            missing
+        })
         .fold(i, |acc, ch| acc + ch.len_utf8())
 }
 
@@ -239,6 +356,41 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 #[track_caller]
 pub fn line_column(s: &str, index: usize) -> (u32, u32) {
     line_columns(s, [index])[0]
+}
+
+/// Get tuple of line and ucs2 column, use byte index
+///
+/// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
+///
+/// # Panics
+///
+/// - index out of `0..s.len()`
+/// - index not on char boundary
+///
+/// # Examples
+/// ```
+/// # use line_column::line_column_ucs2;
+/// let s = "𣘗你";
+/// assert_eq!(&s[4..], "你");
+/// assert_eq!(line_column_ucs2(s, 4),      (1, 3));
+///
+/// let t = "我你";
+/// assert_eq!(&t[3..],"你");
+/// assert_eq!(line_column_ucs2(t, 3),      (1, 2));
+///
+/// assert_eq!(line_column_ucs2("", 0),     (1, 1));
+/// assert_eq!(line_column_ucs2("a", 0),    (1, 1));
+/// assert_eq!(line_column_ucs2("a", 1),    (1, 2));
+/// assert_eq!(line_column_ucs2("ab", 1),   (1, 2));
+/// assert_eq!(line_column_ucs2("a\n", 1),  (1, 2));
+/// assert_eq!(line_column_ucs2("a\n", 2),  (2, 1));
+/// assert_eq!(line_column_ucs2("a\nb", 2), (2, 1));
+/// ```
+#[inline]
+#[must_use]
+#[track_caller]
+pub fn line_column_ucs2(s: &str, index: usize) -> (u32, u32) {
+    line_columns_ucs2(s, [index])[0]
 }
 
 /// Get tuple of line and column, use char index

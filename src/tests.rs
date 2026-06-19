@@ -55,6 +55,37 @@ fn test_simple_char_index() {
 }
 
 #[test]
+fn test_simple_index_ucs2() {
+    let tests = [
+        ("", 0, 1, 1),
+        ("a", 0, 1, 1),
+        ("\n", 0, 1, 1),
+        ("a", 1, 1, 2),
+        ("aa", 1, 1, 2),
+        ("a\n", 1, 1, 2),
+        ("\n", 1, 2, 1),
+        ("\na", 1, 2, 1),
+        ("\n\n", 1, 2, 1),
+        ("\n\n", 2, 3, 1),
+        ("你好", 0, 1, 1),
+        ("你好", 3, 1, 2),
+        ("你好", 6, 1, 3),
+        ("你好\n", 6, 1, 3),
+        ("你好\n", 7, 2, 1),
+        ("𣘗好", 0, 1, 1),
+        ("𣘗好", 4, 1, 3),
+        ("𣘗好", 7, 1, 4),
+        ("𣘗好\n", 7, 1, 4),
+        ("𣘗好\n", 8, 2, 1),
+    ];
+
+    for (s, index, line, column) in tests {
+        let result = line_column_ucs2(s, index);
+        assert_eq!(result, (line, column), "{s:?}[{index}]");
+    }
+}
+
+#[test]
 fn test_crlf_simple() {
     let tests = [
         ("", 0, 1, 1),
@@ -184,6 +215,25 @@ fn char_index_test() {
 }
 
 #[test]
+fn index_ucs2_test() {
+    let tests = [
+        ("你好", 1, 1, 0),
+        ("你好", 1, 2, 3),
+        ("你好", 1, 3, 6),
+        ("\n你好", 2, 1, 1),
+        ("\n你好", 2, 2, 4),
+        ("\n你好", 2, 3, 7),
+        ("𣘗好", 1, 1, 0),
+        ("𣘗好", 1, 3, 4),
+        ("𣘗好", 1, 4, 7),
+    ];
+
+    for d @ (src, line, column, expected) in tests {
+        assert_eq!(index_ucs2(src, line, column), expected, "{d:?}");
+    }
+}
+
+#[test]
 fn index_back_style_test_pair() {
     let tests = [
         ("", 1, 0, 0),
@@ -214,6 +264,7 @@ fn index_back_style_test_pair() {
     {
         assert_eq!(index(src, line, column), expected, "(byte){d:?}");
         assert_eq!(char_index(src, line, column), expected, "(char){d:?}");
+        assert_eq!(index_ucs2(src, line, column), expected, "(byte-ucs2){d:?}");
     }
 }
 
@@ -297,9 +348,15 @@ fn recover_test_pair() {
     for src in tests {
         for i in 0..=src.len() {
             let (line, column) = line_column(src, i);
+            let (uline, ucolumn) = line_column_ucs2(src, i);
+
+            assert_eq!(line, uline);
+            assert_eq!(column, ucolumn);
+
             assert_eq!(char_line_column(src, i), (line, column));
             assert_eq!(index(src, line, column), i);
             assert_eq!(char_index(src, line, column), i);
+            assert_eq!(index_ucs2(src, line, column), i);
         }
     }
 }
