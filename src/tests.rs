@@ -347,8 +347,8 @@ fn recover_test_pair() {
 
     for src in tests {
         for i in 0..=src.len() {
-            let (line, column) = line_column(src, i);
-            let (uline, ucolumn) = line_column_ucs2(src, i);
+            let LineColumn(line, column) = line_column(src, i);
+            let LineColumn(uline, ucolumn) = line_column_ucs2(src, i);
 
             assert_eq!(line, uline);
             assert_eq!(column, ucolumn);

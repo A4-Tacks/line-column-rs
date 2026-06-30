@@ -12,7 +12,7 @@ pub mod span;
 #[cfg(test)]
 mod tests;
 
-const UNINIT_LINE_COL: (u32, u32) = (0, 0);
+const UNINIT_LINE_COL: LineColumn = LineColumn(0, 0);
 
 /// Get multiple pairs of lines and columns may be faster
 ///
@@ -27,7 +27,7 @@ const UNINIT_LINE_COL: (u32, u32) = (0, 0);
 pub fn line_columns<const N: usize>(
     s: &str,
     indexs: [usize; N],
-) -> [(u32, u32); N] {
+) -> [LineColumn; N] {
     let len = s.len();
 
     for index in indexs {
@@ -57,7 +57,7 @@ pub fn line_columns<const N: usize>(
 pub fn line_columns_ucs2<const N: usize>(
     s: &str,
     indexs: [usize; N],
-) -> [(u32, u32); N] {
+) -> [LineColumn; N] {
     let len = s.len();
 
     for index in indexs {
@@ -85,7 +85,7 @@ pub fn line_columns_ucs2<const N: usize>(
 pub fn char_line_columns<const N: usize>(
     s: &str,
     indexs: [usize; N],
-) -> [(u32, u32); N] {
+) -> [LineColumn; N] {
     let mut len = 0;
     let mut result = [UNINIT_LINE_COL; N];
 
@@ -96,7 +96,7 @@ pub fn char_line_columns<const N: usize>(
     {
         for (i, &index) in indexs.iter().enumerate() {
             if index == cur {
-                result[i] = (line, column);
+                result[i] = LineColumn(line, column);
             }
         }
 
@@ -114,7 +114,7 @@ pub fn char_line_columns<const N: usize>(
 
     for (i, &index) in indexs.iter().enumerate() {
         if index >= len {
-            result[i] = last_loc;
+            result[i] = last_loc.into();
         }
     }
 
@@ -131,7 +131,7 @@ pub fn char_line_columns<const N: usize>(
 pub fn line_columns_unchecked<const N: usize>(
     s: &str,
     indexs: [usize; N],
-) -> [(u32, u32); N] {
+) -> [LineColumn; N] {
     let len = s.len();
     let mut result = [UNINIT_LINE_COL; N];
 
@@ -140,7 +140,7 @@ pub fn line_columns_unchecked<const N: usize>(
     {
         for (i, &index) in indexs.iter().enumerate() {
             if index == cur {
-                result[i] = (line, column);
+                result[i] = LineColumn(line, column);
             }
         }
 
@@ -153,7 +153,7 @@ pub fn line_columns_unchecked<const N: usize>(
 
     for (i, &index) in indexs.iter().enumerate() {
         if index == len {
-            result[i] = last_loc;
+            result[i] = last_loc.into();
         }
     }
 
@@ -170,7 +170,7 @@ pub fn line_columns_unchecked<const N: usize>(
 pub fn line_columns_ucs2_unchecked<const N: usize>(
     s: &str,
     indexs: [usize; N],
-) -> [(u32, u32); N] {
+) -> [LineColumn; N] {
     let len = s.len();
     let mut result = [UNINIT_LINE_COL; N];
 
@@ -179,7 +179,7 @@ pub fn line_columns_ucs2_unchecked<const N: usize>(
     {
         for (i, &index) in indexs.iter().enumerate() {
             if index == cur {
-                result[i] = (line, column);
+                result[i] = LineColumn(line, column);
             }
         }
 
@@ -193,7 +193,7 @@ pub fn line_columns_ucs2_unchecked<const N: usize>(
 
     for (i, &index) in indexs.iter().enumerate() {
         if index == len {
-            result[i] = last_loc;
+            result[i] = last_loc.into();
         }
     }
 
@@ -331,6 +331,55 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
     i.saturating_sub(back_style.into())
 }
 
+/// 1-based line and column
+/// Usually not 0, but it also does not prevent
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct LineColumn(pub u32, pub u32);
+
+impl PartialEq<(u32, u32)> for LineColumn {
+    fn eq(&self, other: &(u32, u32)) -> bool {
+        self.0 == other.0 && self.1 == other.1
+    }
+}
+
+impl From<(u32, u32)> for LineColumn {
+    fn from((line, column): (u32, u32)) -> Self {
+        Self(line, column)
+    }
+}
+
+impl LineColumn {
+    #[inline]
+    pub fn line(&self) -> u32 {
+        self.0
+    }
+
+    #[inline]
+    pub fn column(&self) -> u32 {
+        self.1
+    }
+
+    pub fn index(&self, s: &str) -> usize {
+        index(s, self.line(), self.column())
+    }
+
+    pub fn index_ucs2(&self, s: &str) -> usize {
+        index_ucs2(s, self.line(), self.column())
+    }
+}
+
+impl core::fmt::Display for LineColumn {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{}:{}", self.0, self.1)
+    }
+}
+
+impl Default for LineColumn {
+    fn default() -> Self {
+        Self(1, 1)
+    }
+}
+
 /// Get tuple of line and column, use byte index
 ///
 /// Use LF (0x0A) to split newline, also compatible with CRLF (0x0D 0x0A)
@@ -354,7 +403,7 @@ pub fn char_index(s: &str, mut line: u32, mut column: u32) -> usize {
 #[inline]
 #[must_use]
 #[track_caller]
-pub fn line_column(s: &str, index: usize) -> (u32, u32) {
+pub fn line_column(s: &str, index: usize) -> LineColumn {
     line_columns(s, [index])[0]
 }
 
@@ -389,7 +438,7 @@ pub fn line_column(s: &str, index: usize) -> (u32, u32) {
 #[inline]
 #[must_use]
 #[track_caller]
-pub fn line_column_ucs2(s: &str, index: usize) -> (u32, u32) {
+pub fn line_column_ucs2(s: &str, index: usize) -> LineColumn {
     line_columns_ucs2(s, [index])[0]
 }
 
@@ -416,6 +465,6 @@ pub fn line_column_ucs2(s: &str, index: usize) -> (u32, u32) {
 #[inline]
 #[must_use]
 #[track_caller]
-pub fn char_line_column(s: &str, index: usize) -> (u32, u32) {
+pub fn char_line_column(s: &str, index: usize) -> LineColumn {
     char_line_columns(s, [index])[0]
 }

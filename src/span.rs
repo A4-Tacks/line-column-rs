@@ -437,7 +437,7 @@ impl Span {
     /// assert_eq!(span.before().text(), "ab\ncd");
     /// assert_eq!(span.line_column(), (2, 3));
     /// ```
-    pub fn line_column(&self) -> (u32, u32) {
+    pub fn line_column(&self) -> crate::LineColumn {
         crate::line_column(self.source(), self.index().into())
     }
 
@@ -452,7 +452,7 @@ impl Span {
     /// assert_eq!(span.before().text(), "ab\ncd");
     /// assert_eq!(span.line_column_ucs2(), (2, 3));
     /// ```
-    pub fn line_column_ucs2(&self) -> (u32, u32) {
+    pub fn line_column_ucs2(&self) -> crate::LineColumn {
         crate::line_column_ucs2(self.source(), self.index().into())
     }
 
