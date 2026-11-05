@@ -119,6 +119,10 @@ fn like_range() {
     let (a, b) = Span::new_full("foofoo")
         .split_at(TextSize::of("foo"));
     assert_ne!(LikeRange(a), LikeRange(b));
+
+    let like_range = LikeRange(Span::new_full("ab"));
+    let borrowed: &TextRange = like_range.borrow();
+    assert_eq!(borrowed, &TextRange::up_to(TextSize::of("ab")))
 }
 
 #[test]
@@ -130,6 +134,10 @@ fn like_text() {
     let a = Span::new_full("foo");
     let b = Span::new_full("bar");
     assert_ne!(LikeText(a), LikeText(b));
+
+    let like_text = LikeText(Span::new_full("ab"));
+    let borrowed: &str = like_text.borrow();
+    assert_eq!(borrowed, "ab")
 }
 
 #[test]
